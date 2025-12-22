@@ -1,5 +1,5 @@
 from .exceptions import *
-from .access import companies, generic_tools, projects, documents, rfis, directory, submittals, tasks, budgets, direct_costs, cost_codes, time, quality, photos, permissions, change_events, drawings
+from .access import base, companies, generic_tools, projects, documents, rfis, directory, submittals, tasks, budgets, direct_costs, cost_codes, time, quality, photos, permissions, change_events, drawings
 import requests
 
 class Procore:
@@ -44,6 +44,7 @@ class Procore:
 
     def _init_endpoints(self):
         # General
+        self.base_api = base.Base(access_token=self.__access_token, server_url=self.__base_url)
         self.companies = companies.Companies(access_token=self.__access_token, server_url=self.__base_url)
         self.projects = projects.Projects(access_token=self.__access_token, server_url=self.__base_url)
         self.permissions = permissions.Permissions(access_token=self.__access_token, server_url=self.__base_url)
