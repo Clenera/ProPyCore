@@ -1,5 +1,6 @@
 from .base import *
 from .budgets import *
+from .commitments import *
 from .companies import *
 from .directory import *
 from .documents import *
