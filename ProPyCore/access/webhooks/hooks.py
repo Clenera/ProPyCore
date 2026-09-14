@@ -54,12 +54,13 @@ class Hooks(Base):
             return_request_obj=return_request_obj,
         )
 
-    def get(self, company_id, hook_id, project_id=None):
+    def get(self, company_id, hook_id, project_id=None, return_request_obj: bool = False):
         additional_headers = {"Procore-Company-Id": str(company_id)}
 
         return self.get_request(
             f"{self._endpoint(company_id, project_id)}/{hook_id}",
             additional_headers=additional_headers,
+            return_request_obj=return_request_obj,
         )
 
     def create(
@@ -70,6 +71,7 @@ class Hooks(Base):
         namespace,
         project_id=None,
         destination_headers=None,
+        return_request_obj: bool = False,
     ):
         payload = {
             "destination_url": destination_url,
@@ -86,6 +88,7 @@ class Hooks(Base):
             self._endpoint(company_id, project_id),
             additional_headers=additional_headers,
             data=payload,
+            return_request_obj=return_request_obj,
         )
 
     def update(
@@ -98,6 +101,7 @@ class Hooks(Base):
         namespace=None,
         destination_headers=None,
         status=None,
+        return_request_obj: bool = False,
     ):
         payload = {}
 
@@ -122,12 +126,14 @@ class Hooks(Base):
             f"{self._endpoint(company_id, project_id)}/{hook_id}",
             additional_headers=additional_headers,
             data=payload,
+            return_request_obj=return_request_obj,
         )
 
-    def delete(self, company_id, hook_id, project_id=None):
+    def delete(self, company_id, hook_id, project_id=None, return_request_obj: bool = False):
         additional_headers = {"Procore-Company-Id": str(company_id)}
 
         return self.delete_request(
             f"{self._endpoint(company_id, project_id)}/{hook_id}",
             additional_headers=additional_headers,
+            return_request_obj=return_request_obj,
         )
