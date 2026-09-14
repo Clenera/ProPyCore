@@ -71,7 +71,7 @@ class ContractsBase(Base):
 
         return self.post_request(
             self.endpoint,
-            json=payload,
+            data=payload,
         )
 
     def update(
@@ -85,7 +85,7 @@ class ContractsBase(Base):
 
         return self.patch_request(
             f"{self.endpoint}/{contract_id}",
-            json=payload,
+            data=payload,
         )
 
     def delete(self, contract_id):

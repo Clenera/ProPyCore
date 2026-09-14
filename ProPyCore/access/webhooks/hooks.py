@@ -87,7 +87,7 @@ class Hooks(Base):
         return self.post_request(
             self._endpoint(company_id, project_id),
             additional_headers=additional_headers,
-            data=payload,
+            json=payload,
             return_request_obj=return_request_obj,
         )
 
