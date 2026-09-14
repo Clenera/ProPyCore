@@ -1,11 +1,32 @@
 from .exceptions import *
-from .access import base, companies, generic_tools, projects, documents, rfis, directory, submittals, tasks, budgets, direct_costs, cost_codes, time, quality, photos, permissions, change_events, drawings
+from .access import (
+    base,
+    companies,
+    commitments,
+    generic_tools,
+    projects,
+    documents,
+    rfis,
+    directory,
+    submittals,
+    tasks,
+    budgets,
+    direct_costs,
+    cost_codes,
+    time,
+    quality,
+    photos,
+    permissions,
+    change_events,
+    drawings,
+)
 import requests
+
 
 class Procore:
     """
     Main class which creates a connection with the Procore APIs using OAuth2 (Client Credentials Grant Type).
-    This grant type allows access to Procore data without having to login as a specific user. 
+    This grant type allows access to Procore data without having to login as a specific user.
     """
 
     def __init__(self, client_id, client_secret, redirect_uri, base_url, oauth_url) -> None:
@@ -29,7 +50,7 @@ class Procore:
         """
         self.__client_id = client_id
         self.__client_secret = client_secret
-        
+
         self.__redirect_uri = redirect_uri
         self.__base_url = base_url
         self.__oauth_url = oauth_url
@@ -46,6 +67,7 @@ class Procore:
         # General
         self.base_api = base.Base(access_token=self.__access_token, server_url=self.__base_url)
         self.companies = companies.Companies(access_token=self.__access_token, server_url=self.__base_url)
+        self.commitments = commitments.Commitments(access_token=self.__access_token, server_url=self.__base_url)
         self.projects = projects.Projects(access_token=self.__access_token, server_url=self.__base_url)
         self.permissions = permissions.Permissions(access_token=self.__access_token, server_url=self.__base_url)
         # Documents
@@ -74,7 +96,7 @@ class Procore:
     def get_access_token(self):
         """
         Gets access token from authorization code previously obtained from the get_auth_code call.
-        
+
         Parameters
         ----------
         code : str
@@ -86,11 +108,8 @@ class Procore:
             2-hour access token
         """
         client_auth = requests.auth.HTTPBasicAuth(self.__client_id, self.__client_secret)
-        post_data = {
-            "grant_type": "client_credentials",
-            "redirect_uri": self.__redirect_uri
-        }
-        response = requests.post(self.__base_url+"/oauth/token", auth=client_auth, data=post_data)
+        post_data = {"grant_type": "client_credentials", "redirect_uri": self.__redirect_uri}
+        response = requests.post(self.__base_url + "/oauth/token", auth=client_auth, data=post_data)
         response_json = response.json()
 
         return response_json["access_token"]
