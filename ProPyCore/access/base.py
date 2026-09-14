@@ -24,6 +24,64 @@ class Base:
         self.__access_token = access_token
         self.__server_url = server_url
 
+    def _request(
+        self,
+        method,
+        api_url,
+        additional_headers=None,
+        params=None,
+        return_request_obj: bool = False,
+        **kwargs,
+    ):
+        """Build the auth headers/URL and dispatch a request via ``requests.request``.
+
+        Parameters
+        ----------
+        method : str
+            HTTP method to use (e.g. "GET", "POST", "PATCH", "DELETE")
+        api_url : str
+            endpoint for the specific API call
+        additional_headers : dict, default None
+            additional headers beyond Authorization
+        params : dict, default None
+            query parameters to append to the URL
+        return_request_obj : bool, default False
+            If True, return the underlying ``requests.Response`` object
+            instead of the parsed JSON / default return type.
+        **kwargs
+            forwarded directly to ``requests.request`` (e.g. ``data``, ``json``, ``files``)
+
+        Returns
+        -------
+        dict or requests.Response
+            By default, the parsed JSON response, or for DELETE requests a
+            dict containing the status code (``{"status_code": response.status_code}``).
+            If ``return_request_obj`` is True, returns the raw
+            ``requests.Response`` object instead.
+        """
+
+        if params is None:
+            url = self.__server_url + api_url
+        else:
+            url = self.__server_url + api_url + "?" + urllib.parse.urlencode(params, doseq=True)
+
+        headers = {"Authorization": f"Bearer {self.__access_token}"}
+        if additional_headers is not None:
+            headers.update(additional_headers)
+
+        response = requests.request(method, url, headers=headers, **kwargs)
+
+        if not response.ok:
+            raise_exception(response)
+
+        if return_request_obj:
+            return response
+
+        if method == "DELETE":
+            return {"status_code": response.status_code}
+
+        return response.json()
+
     def get_request(
         self,
         api_url,
@@ -53,22 +111,13 @@ class Base:
             ``requests.Response`` object instead.
         """
 
-        if params is None:
-            url = self.__server_url + api_url
-        else:
-            url = self.__server_url + api_url + "?" + urllib.parse.urlencode(params, doseq=True)
-
-        headers = {"Authorization": f"Bearer {self.__access_token}"}
-        if additional_headers is not None:
-            for key, value in additional_headers.items():
-                headers[key] = value
-
-        response = requests.get(url, headers=headers)
-
-        if response.ok:
-            return response if return_request_obj else response.json()
-        else:
-            raise_exception(response)
+        return self._request(
+            "GET",
+            api_url,
+            additional_headers=additional_headers,
+            params=params,
+            return_request_obj=return_request_obj,
+        )
 
     def post_request(
         self,
@@ -76,6 +125,7 @@ class Base:
         additional_headers=None,
         params=None,
         data=None,
+        json=None,
         files=None,
         return_request_obj: bool = False,
     ):
@@ -90,7 +140,10 @@ class Base:
         params : dict, default None
             Query parameters for the POST request
         data : dict, default None
-            POST data to send
+            POST data to send. Treated as the JSON body unless ``files`` is set.
+        json : dict, default None
+            POST data to send as the JSON body. Takes precedence over ``data``
+            when ``files`` is not set.
         files : list of tuple, default None
             open files to send to Procore
         return_request_obj : bool, default False
@@ -105,50 +158,19 @@ class Base:
             ``requests.Response`` object instead.
         """
 
-        # Get URL
-        if params is None:
-            url = self.__server_url + api_url
+        if files is not None:
+            request_kwargs = {"data": data, "files": files}
         else:
-            url = self.__server_url + api_url + "?" + urllib.parse.urlencode(params)
+            request_kwargs = {"json": json if json is not None else data}
 
-        # Get Headers
-        headers = {"Authorization": f"Bearer {self.__access_token}"}
-        if additional_headers is not None:
-            for key, value in additional_headers.items():
-                headers[key] = value
-
-        # Make the request with file if necessary
-        if files is None:
-            headers["Content-Type"] = "application/json"
-            response = requests.request(
-                "POST",
-                url,
-                headers=headers,
-                json=data,  # Use json parameter instead of data to properly serialize
-            )
-            """
-            print(f"Request URL: {response.request.url}")
-            print(f"Request Headers: {response.request.headers}")
-            print(f"Request Data: {response.request.body}")
-            """
-        elif data is None:
-            response = requests.request(
-                "POST",
-                url,
-                headers=headers,
-                files=files,  # use files for multipart/form-data
-            )
-        else:
-            response = requests.request("POST", url, headers=headers, data=data, files=files)
-
-        if response.ok:
-            return response if return_request_obj else response.json()
-        else:
-            """
-            print("Response Status Code:", response.status_code)
-            print("Response Text:", response.text)
-            """
-            raise_exception(response)
+        return self._request(
+            "POST",
+            api_url,
+            additional_headers=additional_headers,
+            params=params,
+            return_request_obj=return_request_obj,
+            **request_kwargs,
+        )
 
     def patch_request(
         self,
@@ -156,6 +178,7 @@ class Base:
         additional_headers=None,
         params=None,
         data=None,
+        json=None,
         files=False,
         return_request_obj: bool = False,
     ):
@@ -170,7 +193,10 @@ class Base:
         params : dict, default None
             PATCH parameters to parse
         data : dict, default None
-            PATCH data to send
+            PATCH data to send. Treated as the JSON body unless ``files`` is set.
+        json : dict, default None
+            PATCH data to send as the JSON body. Takes precedence over ``data``
+            when ``files`` is False.
         files : dict or boolean, default False
             False - updating folder so use JSON request
             True - updating file, but no file to include
@@ -187,42 +213,21 @@ class Base:
             ``requests.Response`` object instead.
         """
 
-        # Get URL
-        if params is None:
-            url = self.__server_url + api_url
-        else:
-            url = self.__server_url + api_url + "?" + urllib.parse.urlencode(params)
-
-        # Get Headers
-        headers = {"Authorization": f"Bearer {self.__access_token}"}
-        if additional_headers is not None:
-            for key, value in additional_headers.items():
-                headers[key] = value
-
         if files is False:
-            response = requests.patch(
-                url,
-                headers=headers,
-                json=data,  # json for folder update
-            )
+            request_kwargs = {"json": json if json is not None else data}
         elif files is True:
-            response = requests.patch(
-                url,
-                headers=headers,
-                data=data,  # data for file update
-            )
+            request_kwargs = {"data": data}
         else:
-            response = requests.patch(
-                url,
-                headers=headers,
-                data=data,  # data for file update
-                files=files,
-            )
+            request_kwargs = {"data": data, "files": files}
 
-        if response.ok:
-            return response if return_request_obj else response.json()
-        else:
-            raise_exception(response)
+        return self._request(
+            "PATCH",
+            api_url,
+            additional_headers=additional_headers,
+            params=params,
+            return_request_obj=return_request_obj,
+            **request_kwargs,
+        )
 
     def delete_request(
         self,
@@ -255,27 +260,10 @@ class Base:
             ``requests.Response`` object instead.
         """
 
-        # Get URL
-        if params is None:
-            url = self.__server_url + api_url
-        else:
-            url = self.__server_url + api_url + "?" + urllib.parse.urlencode(params)
-
-        # Get Headers
-        headers = {"Authorization": f"Bearer {self.__access_token}"}
-        if additional_headers is not None:
-            for key, value in additional_headers.items():
-                headers[key] = value
-
-        # DELETE request
-        response = requests.delete(
-            url=url,
-            headers=headers,
+        return self._request(
+            "DELETE",
+            api_url,
+            additional_headers=additional_headers,
+            params=params,
+            return_request_obj=return_request_obj,
         )
-
-        if response.ok:
-            if return_request_obj:
-                return response
-            return {"status_code": response.status_code}
-        else:
-            raise_exception(response)
