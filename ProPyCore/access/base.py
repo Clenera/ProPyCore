@@ -71,12 +71,10 @@ class Base:
 
         response = requests.request(method, url, headers=headers, **kwargs)
 
-        if not response.ok:
-            raise_exception(response)
-
         if return_request_obj:
             return response
-
+        if not response.ok:
+            raise_exception(response)
         if method == "DELETE":
             return {"status_code": response.status_code}
 
