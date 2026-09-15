@@ -4,6 +4,7 @@ from ..base import Base
 class ChangeOrders(Base):
     """
     Procore Commitment Change Orders
+    https://developers.procore.com/reference/rest/commitment-change-orders?version=latest
 
     /rest/v1.0/projects/{project_id}/commitment_change_orders
     """
