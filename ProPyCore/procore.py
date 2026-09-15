@@ -19,6 +19,7 @@ from .access import (
     permissions,
     change_events,
     drawings,
+    webhooks,
 )
 import requests
 
@@ -92,6 +93,8 @@ class Procore:
         self.quality = quality.Quality(access_token=self.__access_token, server_url=self.__base_url)
         # Drawings
         self.drawings = drawings.Drawings(access_token=self.__access_token, server_url=self.__base_url)
+        # Webhooks
+        self.webhooks = webhooks.Webhooks(access_token=self.__access_token, server_url=self.__base_url)
 
     def get_access_token(self):
         """
