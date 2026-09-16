@@ -5,11 +5,29 @@ from ...exceptions import NotFoundItemError
 
 
 class People(Base):
-    """
-    Access user information on a Company and Project Level
-    """
+    """Access user information on a Company and Project Level"""
 
-    ...
+    def get_url(self, company_id, project_id=None):
+        """
+        Returns the url specific to People at company or project level
+
+        Parameters
+        ----------
+        company_id : int
+            unique identifier for the company
+        project_id : int, default None
+            unique identifier for the project
+            None specifies company-level
+
+        Returns
+        -------
+        <get_url> : str
+            url for People request
+        """
+        if project_id is None:
+            return f"/rest/v1.0/companies/{company_id}/people"
+        else:
+            return f"/rest/v1.0/projects/{project_id}/people"
 
     def list(
         self,
@@ -17,6 +35,24 @@ class People(Base):
         project_id=None,
         per_page=1000,
     ):
+        """
+        Gets a list of all people from the company or project level
+
+        Parameters
+        ----------
+        company_id : int
+            unique identifier for the company
+        project_id : int, default None
+            unique identifier for the project
+            None specifies company-level
+        per_page : int, default 100
+            number of companies to include
+
+        Returns
+        -------
+        people : list of dict
+            list where each value is a dict with a person's information
+        """
         people = []
         n_people = 1
         page = 1
@@ -52,6 +88,7 @@ class People(Base):
         project_id=None,
         return_request_obj=False,
     ):
+
         headers = {"Procore-Company-Id": str(company_id)}
 
         return self.get_request(
@@ -70,6 +107,24 @@ class People(Base):
         project_id=None,
         per_page=1000,
     ):
+        """
+        Gets a list of all people from the company or project level
+
+        Parameters
+        ----------
+        company_id : int
+            unique identifier for the company
+        project_id : int, default None
+            unique identifier for the project
+            None specifies company-level
+        per_page : int, default 100
+            number of companies to include
+
+        Returns
+        -------
+        people : list of dict
+            list where each value is a dict with a person's information
+        """
         warnings.warn(
             "People.get() is deprecated and will be removed in a future " "release. Use People.list() instead.",
             DeprecationWarning,
