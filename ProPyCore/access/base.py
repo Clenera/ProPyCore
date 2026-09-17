@@ -265,3 +265,93 @@ class Base:
             params=params,
             return_request_obj=return_request_obj,
         )
+
+    def download_url(
+        self,
+        url,
+        company_id=None,
+        additional_headers=None,
+        return_request_obj=False,
+        **request_kwargs,
+    ):
+        """
+        Download the contents of a Procore file or attachment from a URL.
+
+        This helper is intended for use with attachment/file objects returned by
+        various Procore endpoints that expose a direct download URL, such as:
+
+            {
+                "id": 123,
+                "filename": "document.pdf",
+                "url": "https://.../fas/api/v5/files/..."
+            }
+
+        Examples include commitment attachments, correspondence attachments,
+        submittal attachments, RFI attachments, observation attachments, and
+        other resources that return attachment metadata containing a `url`
+        property.
+
+        The method issues an authenticated GET request to the provided URL and
+        returns the raw file bytes. This is useful when the calling code already
+        has an attachment object and simply needs the file contents without
+        performing additional API lookups.
+
+        Args:
+            url (str):
+                Download URL returned by Procore.
+
+            company_id (int, optional):
+                Company identifier to include in the
+                `Procore-Company-Id` header.
+
+            additional_headers (dict, optional):
+                Additional headers to include with the request.
+                These are merged with the authentication headers.
+
+            return_request_obj (bool, optional):
+                When True, returns the underlying `requests.Response`
+                object instead of the downloaded bytes.
+
+        Returns:
+            bytes | requests.Response:
+                Raw file contents by default.
+
+                If `return_request_obj=True`, returns the full
+                `requests.Response` object.
+
+        Raises:
+            requests.HTTPError:
+                Raised when the remote endpoint returns a non-success
+                status code.
+
+        Notes:
+            - Authentication is performed using the access token associated
+            with the Procore client.
+            - Some Procore file URLs are temporary and may expire.
+            - If a URL returns HTTP 401, ensure a valid access token is
+            being supplied and that the current user has permission to
+            access the underlying document.
+            - This utility downloads a file from an already-known URL; it
+            does not search for files or resolve document identifiers.
+        """
+        headers = {
+            "Authorization": f"Bearer {self.__access_token}",
+        }
+        if company_id is not None:
+            headers["Procore-Company-Id"] = str(company_id)
+        if additional_headers is not None:
+            headers.update(additional_headers)
+
+        response = requests.get(
+            url,
+            headers=headers,
+            allow_redirects=True,
+            stream=True,
+            **request_kwargs,
+        )
+
+        if return_request_obj:
+            return response
+
+        response.raise_for_status()
+        return response.content
