@@ -72,6 +72,7 @@ class Procore:
         self.projects = projects.Projects(access_token=self.__access_token, server_url=self.__base_url)
         self.permissions = permissions.Permissions(access_token=self.__access_token, server_url=self.__base_url)
         # Documents
+        self.documents = documents.DocumentIndex(access_token=self.__access_token, server_url=self.__base_url)
         self.folders = documents.Folders(access_token=self.__access_token, server_url=self.__base_url)
         self.files = documents.Files(access_token=self.__access_token, server_url=self.__base_url)
         self.photos = photos.Photos(access_token=self.__access_token, server_url=self.__base_url)
