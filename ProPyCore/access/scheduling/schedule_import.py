@@ -32,9 +32,9 @@ class ScheduleImport(Base):
 
         data = {"file": file}
 
-        return self.post_request(
+        return self.put_request(
             self._endpoint(company_id, project_id, schedule_id),
             additional_headers=additional_headers,
-            json=data,
+            data=data,
             return_request_obj=return_request_obj,
         )
