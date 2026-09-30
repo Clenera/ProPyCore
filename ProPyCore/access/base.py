@@ -63,7 +63,12 @@ class Base:
         if params is None:
             url = self.__server_url + api_url
         else:
-            url = self.__server_url + api_url + "?" + urllib.parse.urlencode(params, doseq=True)
+            url = (
+                self.__server_url
+                + api_url
+                + "?"
+                + urllib.parse.urlencode(params, doseq=True)
+            )
 
         headers = {"Authorization": f"Bearer {self.__access_token}"}
         if additional_headers is not None:
@@ -355,3 +360,55 @@ class Base:
 
         response.raise_for_status()
         return response.content
+
+    def put_request(
+        self,
+        api_url,
+        additional_headers=None,
+        params=None,
+        data=None,
+        json=None,
+        return_request_obj: bool = False,
+    ):
+        """Create an HTTP PUT request.
+
+        Parameters
+        ----------
+        api_url : str
+            endpoint for the specific API call
+        additional_headers : dict, default None
+            additional headers beyond Authorization
+        params : dict, default None
+            PUT parameters to parse
+        json : dict, default None
+            PUT data to send as the JSON body. Takes precedence over ``data``
+            when ``files`` is False.
+        data : dict, default None
+            PUT data to send as the form-encoded body.
+        return_request_obj : bool, default False
+            If True, return the underlying ``requests.Response`` object
+            instead of the parsed JSON / default return type.
+
+        Returns
+        -------
+        dict or requests.Response
+            By default, the PUT response in JSON (``response.json()``).
+            If ``return_request_obj`` is True, returns the raw
+            ``requests.Response`` object instead.
+        """
+
+        if data is None and json is not None:
+            request_kwargs = {"json": json}
+        elif data is not None:
+            request_kwargs = {"data": data}
+        else:
+            request_kwargs = {}
+
+        return self._request(
+            "PUT",
+            api_url,
+            additional_headers=additional_headers,
+            params=params,
+            return_request_obj=return_request_obj,
+            **request_kwargs,
+        )
