@@ -30,7 +30,7 @@ class ScheduleImport(Base):
 
         fileContent = base64.b64decode(file)
 
-        data = {"file": file}
+        data = {"file": fileContent}
 
         return self.put_request(
             self._endpoint(company_id, project_id, schedule_id),
