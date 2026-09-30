@@ -367,6 +367,7 @@ class Base:
         additional_headers=None,
         params=None,
         data=None,
+        files=None,
         json=None,
         return_request_obj: bool = False,
     ):
@@ -379,30 +380,23 @@ class Base:
         additional_headers : dict, default None
             additional headers beyond Authorization
         params : dict, default None
-            PUT parameters to parse
+            Query parameters for the PUT request
+        data : dict, default None
+            PUT data to send. Treated as the JSON body unless ``files`` is set.
         json : dict, default None
             PUT data to send as the JSON body. Takes precedence over ``data``
-            when ``files`` is False.
-        data : dict, default None
-            PUT data to send as the form-encoded body.
+            when ``files`` is not set.
+        files : list of tuple, default None
+            open files to send to Procore
         return_request_obj : bool, default False
             If True, return the underlying ``requests.Response`` object
-            instead of the parsed JSON / default return type.
-
-        Returns
-        -------
-        dict or requests.Response
-            By default, the PUT response in JSON (``response.json()``).
-            If ``return_request_obj`` is True, returns the raw
-            ``requests.Response`` object instead.
+            instead of the parsed JSON / default return type.\
         """
 
-        if data is None and json is not None:
-            request_kwargs = {"json": json}
-        elif data is not None:
-            request_kwargs = {"data": data}
+        if files is not None:
+            request_kwargs = {"data": data, "files": files}
         else:
-            request_kwargs = {}
+            request_kwargs = {"json": json if json is not None else data}
 
         return self._request(
             "PUT",

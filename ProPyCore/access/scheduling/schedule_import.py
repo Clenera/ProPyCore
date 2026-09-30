@@ -24,7 +24,6 @@ class ScheduleImport(Base):
         """
         additional_headers = {
             "Procore-Company-Id": str(company_id),
-            "content-type": "multipart/form-data",
             "locale": "en",
         }
 
@@ -35,6 +34,6 @@ class ScheduleImport(Base):
         return self.put_request(
             self._endpoint(company_id, project_id, schedule_id),
             additional_headers=additional_headers,
-            data=data,
+            files=data,
             return_request_obj=return_request_obj,
         )
