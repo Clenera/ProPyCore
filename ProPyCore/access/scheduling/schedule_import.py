@@ -32,7 +32,7 @@ class ScheduleImport(Base):
             "locale": "en",
         }
 
-        data = {"file": (file_name, open(file, "rb"), "application/octet-stream")}
+        data = {"file": (file_name, file, "application/octet-stream")}
 
         return self.put_request(
             self._endpoint(company_id, project_id, schedule_id),
