@@ -16,20 +16,23 @@ class ScheduleImport(Base):
         return f"/rest/v2.0/companies/{company_id}/projects/{project_id}/schedules/{schedule_id}/import"
 
     def import_schedule(
-        self, company_id, project_id, schedule_id, file: str, return_request_obj=False
+        self,
+        company_id,
+        project_id,
+        schedule_id,
+        file: str,
+        file_name: str,
+        return_request_obj=False,
     ):
         """
         Initiate the import of a schedule for a given project. The file should be in a supported format (e.g., .mpp, .xml, .xlsx).
-        `file` should be base 64 encoded string of the file content.
         """
         additional_headers = {
             "Procore-Company-Id": str(company_id),
             "locale": "en",
         }
 
-        fileContent = base64.b64decode(file)
-
-        data = {"file": fileContent}
+        data = {"file": (file_name, open(file, "rb"), "application/octet-stream")}
 
         return self.put_request(
             self._endpoint(company_id, project_id, schedule_id),
