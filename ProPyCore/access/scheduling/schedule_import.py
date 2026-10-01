@@ -74,7 +74,7 @@ class ScheduleImport(Base):
         return_request_obj=False,
     ):
         """
-        Check the status of a schedule import for a given project.
+        Fetch the logs for a schedule import job.
         """
         additional_headers = {
             "Procore-Company-Id": str(company_id),
