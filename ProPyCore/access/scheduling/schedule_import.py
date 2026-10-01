@@ -64,3 +64,28 @@ class ScheduleImport(Base):
             additional_headers=additional_headers,
             return_request_obj=return_request_obj,
         )
+
+    def get_import_logs(
+        self,
+        company_id,
+        project_id,
+        schedule_id: int,
+        job_id: int,
+        return_request_obj=False,
+    ):
+        """
+        Check the status of a schedule import for a given project.
+        """
+        additional_headers = {
+            "Procore-Company-Id": str(company_id),
+        }
+
+        endpoint = (
+            self._endpoint(company_id, project_id, schedule_id) + f"s/{job_id}/logs"
+        )
+
+        return self.get_request(
+            endpoint,
+            additional_headers=additional_headers,
+            return_request_obj=return_request_obj,
+        )
