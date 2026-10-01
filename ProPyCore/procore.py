@@ -10,6 +10,7 @@ from .access import (
     directory,
     submittals,
     tasks,
+    scheduling,
     budgets,
     direct_costs,
     cost_codes,
@@ -30,7 +31,9 @@ class Procore:
     This grant type allows access to Procore data without having to login as a specific user.
     """
 
-    def __init__(self, client_id, client_secret, redirect_uri, base_url, oauth_url) -> None:
+    def __init__(
+        self, client_id, client_secret, redirect_uri, base_url, oauth_url
+    ) -> None:
         """
         Initialize the connection
 
@@ -66,36 +69,84 @@ class Procore:
 
     def _init_endpoints(self):
         # General
-        self.base_api = base.Base(access_token=self.__access_token, server_url=self.__base_url)
-        self.companies = companies.Companies(access_token=self.__access_token, server_url=self.__base_url)
-        self.commitments = commitments.Commitments(access_token=self.__access_token, server_url=self.__base_url)
-        self.projects = projects.Projects(access_token=self.__access_token, server_url=self.__base_url)
-        self.permissions = permissions.Permissions(access_token=self.__access_token, server_url=self.__base_url)
+        self.base_api = base.Base(
+            access_token=self.__access_token, server_url=self.__base_url
+        )
+        self.companies = companies.Companies(
+            access_token=self.__access_token, server_url=self.__base_url
+        )
+        self.commitments = commitments.Commitments(
+            access_token=self.__access_token, server_url=self.__base_url
+        )
+        self.projects = projects.Projects(
+            access_token=self.__access_token, server_url=self.__base_url
+        )
+        self.permissions = permissions.Permissions(
+            access_token=self.__access_token, server_url=self.__base_url
+        )
         # Documents
-        self.documents = documents.DocumentIndex(access_token=self.__access_token, server_url=self.__base_url)
-        self.folders = documents.Folders(access_token=self.__access_token, server_url=self.__base_url)
-        self.files = documents.Files(access_token=self.__access_token, server_url=self.__base_url)
-        self.photos = photos.Photos(access_token=self.__access_token, server_url=self.__base_url)
+        self.documents = documents.DocumentIndex(
+            access_token=self.__access_token, server_url=self.__base_url
+        )
+        self.folders = documents.Folders(
+            access_token=self.__access_token, server_url=self.__base_url
+        )
+        self.files = documents.Files(
+            access_token=self.__access_token, server_url=self.__base_url
+        )
+        self.photos = photos.Photos(
+            access_token=self.__access_token, server_url=self.__base_url
+        )
         # Tools
-        self.rfis = rfis.RFI(access_token=self.__access_token, server_url=self.__base_url)
-        self.submittals = submittals.Submittal(access_token=self.__access_token, server_url=self.__base_url)
-        self.tasks = tasks.Task(access_token=self.__access_token, server_url=self.__base_url)
-        self.tools = generic_tools.GenericTool(access_token=self.__access_token, server_url=self.__base_url)
-        self.change_events = change_events.ChangeEvent(access_token=self.__access_token, server_url=self.__base_url)
+        self.rfis = rfis.RFI(
+            access_token=self.__access_token, server_url=self.__base_url
+        )
+        self.submittals = submittals.Submittal(
+            access_token=self.__access_token, server_url=self.__base_url
+        )
+        self.tasks = tasks.Task(
+            access_token=self.__access_token, server_url=self.__base_url
+        )
+        self.tools = generic_tools.GenericTool(
+            access_token=self.__access_token, server_url=self.__base_url
+        )
+        self.change_events = change_events.ChangeEvent(
+            access_token=self.__access_token, server_url=self.__base_url
+        )
         # People
-        self.directory = directory.Directory(access_token=self.__access_token, server_url=self.__base_url)
+        self.directory = directory.Directory(
+            access_token=self.__access_token, server_url=self.__base_url
+        )
         # Financials
-        self.budgets = budgets.Budgets(access_token=self.__access_token, server_url=self.__base_url)
-        self.direct_costs = direct_costs.DirectCosts(access_token=self.__access_token, server_url=self.__base_url)
-        self.cost_codes = cost_codes.CostCodes(access_token=self.__access_token, server_url=self.__base_url)
+        self.budgets = budgets.Budgets(
+            access_token=self.__access_token, server_url=self.__base_url
+        )
+        self.direct_costs = direct_costs.DirectCosts(
+            access_token=self.__access_token, server_url=self.__base_url
+        )
+        self.cost_codes = cost_codes.CostCodes(
+            access_token=self.__access_token, server_url=self.__base_url
+        )
         # Time
-        self.time = time.Time(access_token=self.__access_token, server_url=self.__base_url)
+        self.time = time.Time(
+            access_token=self.__access_token, server_url=self.__base_url
+        )
         # Quality
-        self.quality = quality.Quality(access_token=self.__access_token, server_url=self.__base_url)
+        self.quality = quality.Quality(
+            access_token=self.__access_token, server_url=self.__base_url
+        )
         # Drawings
-        self.drawings = drawings.Drawings(access_token=self.__access_token, server_url=self.__base_url)
+        self.drawings = drawings.Drawings(
+            access_token=self.__access_token, server_url=self.__base_url
+        )
         # Webhooks
-        self.webhooks = webhooks.Webhooks(access_token=self.__access_token, server_url=self.__base_url)
+        self.webhooks = webhooks.Webhooks(
+            access_token=self.__access_token, server_url=self.__base_url
+        )
+        # Scheduling
+        self.scheduling = scheduling.Scheduling(
+            access_token=self.__access_token, server_url=self.__base_url
+        )
 
     def get_access_token(self):
         """
@@ -111,9 +162,16 @@ class Procore:
         <access_token> : str
             2-hour access token
         """
-        client_auth = requests.auth.HTTPBasicAuth(self.__client_id, self.__client_secret)
-        post_data = {"grant_type": "client_credentials", "redirect_uri": self.__redirect_uri}
-        response = requests.post(self.__base_url + "/oauth/token", auth=client_auth, data=post_data)
+        client_auth = requests.auth.HTTPBasicAuth(
+            self.__client_id, self.__client_secret
+        )
+        post_data = {
+            "grant_type": "client_credentials",
+            "redirect_uri": self.__redirect_uri,
+        }
+        response = requests.post(
+            self.__base_url + "/oauth/token", auth=client_auth, data=post_data
+        )
         response_json = response.json()
 
         return response_json["access_token"]
