@@ -58,6 +58,7 @@ class Schedules(Base):
         return self.get_request(
             self._endpoint(company_id, project_id),
             additional_headers=additional_headers,
+            params=params,
             return_request_obj=return_request_obj,
         )
 
