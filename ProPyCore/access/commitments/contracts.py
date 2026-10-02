@@ -97,6 +97,7 @@ class ContractsBase(Base):
         contract_id,
         contract,
         project_id=None,
+        params={},
         return_request_obj=False,
     ):
         payload = {
@@ -110,6 +111,7 @@ class ContractsBase(Base):
             f"{self.endpoint}/{contract_id}",
             additional_headers=self._headers(company_id),
             json=payload,
+            params=params,
             return_request_obj=return_request_obj,
         )
 
