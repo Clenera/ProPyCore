@@ -1,5 +1,9 @@
 import urllib
+import random
 import requests
+import time
+from datetime import datetime, timezone
+from email.utils import parsedate_to_datetime
 
 from ..exceptions import raise_exception
 
@@ -74,7 +78,45 @@ class Base:
         if additional_headers is not None:
             headers.update(additional_headers)
 
-        response = requests.request(method, url, headers=headers, **kwargs)
+        max_retries = kwargs.pop("max_retries", 5)
+        base_delay = kwargs.pop("base_delay", 1.0)
+        max_delay = kwargs.pop("max_delay", 60.0)
+
+        response = None
+        for attempt in range(max_retries + 1):
+            response = requests.request(method, url, headers=headers, **kwargs)
+
+            if response.status_code != 429:
+                break
+
+            if attempt >= max_retries:
+                break
+
+            retry_after = response.headers.get("x-rate-limit-reset")
+            delay_seconds = None
+
+            if retry_after:
+                try:
+                    delay_seconds = float(retry_after)
+                except ValueError:
+                    try:
+                        retry_after_dt = parsedate_to_datetime(retry_after)
+                        if retry_after_dt.tzinfo is None:
+                            retry_after_dt = retry_after_dt.replace(tzinfo=timezone.utc)
+                        delay_seconds = max(
+                            0.0,
+                            (
+                                retry_after_dt - datetime.now(timezone.utc)
+                            ).total_seconds(),
+                        )
+                    except (TypeError, ValueError, OverflowError):
+                        delay_seconds = None
+
+            if delay_seconds is None:
+                delay_seconds = min(max_delay, base_delay * (2**attempt))
+
+            delay_seconds = min(max_delay, delay_seconds) + random.uniform(0, 0.5)
+            time.sleep(delay_seconds)
 
         if return_request_obj:
             return response
