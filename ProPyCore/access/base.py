@@ -97,7 +97,15 @@ class Base:
 
             if retry_after:
                 try:
-                    delay_seconds = float(retry_after)
+                    # Procore's x-rate-limit-reset is the absolute time when retry is allowed
+                    # (typically Unix epoch seconds), not a duration.
+                    reset_at = float(retry_after)
+                    if reset_at > 1e12:
+                        # Handle epoch milliseconds defensively
+                        reset_at = reset_at / 1000.0
+
+                    now_ts = datetime.now(timezone.utc).timestamp()
+                    delay_seconds = max(0.0, reset_at - now_ts)
                 except ValueError:
                     try:
                         retry_after_dt = parsedate_to_datetime(retry_after)
