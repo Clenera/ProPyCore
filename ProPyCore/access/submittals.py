@@ -210,7 +210,7 @@ class Submittal(Base):
         company_id,
         project_id,
         submittal_body,
-        params = {}
+        params={},
         return_request_obj: bool = False,
     ):
         """
