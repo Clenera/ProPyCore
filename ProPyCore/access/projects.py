@@ -188,7 +188,9 @@ class Projects(Base):
         headers = {"Procore-Company-Id": f"{company_id}"}
         # Get the projects from the company endpoint which has the type_name field
         company_projects = self.get_request(
-            api_url=f"/rest/v1.0/companies/{company_id}/projects", additional_headers=headers, params={}
+            api_url=f"/rest/v1.0/companies/{company_id}/projects",
+            additional_headers=headers,
+            params={},
         )
 
         # Search for the project with the matching project_id and return the type_name
@@ -197,3 +199,82 @@ class Projects(Base):
                 return project.get("type_name")
 
         raise NotFoundItemError(f"Could not find project {project_id}")
+
+    def get_links(
+        self,
+        company_id,
+        project_id,
+        per_page=100,
+        return_request_obj=False,
+    ):
+        links = []
+        page = 1
+
+        while True:
+            params = {
+                "company_id": company_id,
+                "project_id": project_id,
+                "page": page,
+                "per_page": per_page,
+            }
+
+            response = self.get_request(
+                api_url=f"/rest/v2.0/companies/{company_id}/projects/{project_id}/links",
+                additional_headers=self._headers(company_id),
+                params=params,
+                return_request_obj=return_request_obj,
+            )
+
+            if return_request_obj:
+                return response
+
+            if not response:
+                break
+
+            links.extend(response.get("data", []))
+
+            if len(response.get("data", [])) < per_page:
+                break
+
+            page += 1
+
+        return links
+
+    def patch_project_links(
+        self,
+        company_id,
+        project_id,
+        links,
+        return_request_obj=False,
+    ):
+        """
+        Create or update  links for a project.
+
+        Parameters
+        ----------
+        company_id : int
+            The identifier for the company
+        project_id : int
+            The identifier for the project
+        links : list
+            A list of link objects to update
+                [
+                    {
+                        "id": "999",
+                        "title": "Site cam", #required
+                        "url": "https://developers.procore.com/reference/authentication" #required
+                    }
+                ]
+
+        Returns
+        -------
+        response : dict
+            The response from the API after updating the links
+        """
+
+        return self.patch_request(
+            api_url=f"/rest/v2.0/companies/{company_id}/projects/{project_id}/links/bulk_update",
+            additional_headers=self._headers(company_id),
+            json=links,
+            return_request_obj=return_request_obj,
+        )
