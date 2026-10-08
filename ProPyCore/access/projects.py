@@ -219,7 +219,7 @@ class Projects(Base):
             }
 
             response = self.get_request(
-                api_url=f"/rest/v1.0/companies/{company_id}/projects/{project_id}/links",
+                api_url=f"/rest/v2.0/companies/{company_id}/projects/{project_id}/links",
                 additional_headers=self._headers(company_id),
                 params=params,
                 return_request_obj=return_request_obj,
