@@ -239,3 +239,42 @@ class Projects(Base):
             page += 1
 
         return links
+
+    def patch_project_links(
+        self,
+        company_id,
+        project_id,
+        links,
+        return_request_obj=False,
+    ):
+        """
+        Create or update  links for a project.
+
+        Parameters
+        ----------
+        company_id : int
+            The identifier for the company
+        project_id : int
+            The identifier for the project
+        links : list
+            A list of link objects to update
+                [
+                    {
+                        "id": "999",
+                        "title": "Site cam", #required
+                        "url": "https://developers.procore.com/reference/authentication" #required
+                    }
+                ]
+
+        Returns
+        -------
+        response : dict
+            The response from the API after updating the links
+        """
+
+        return self.patch_request(
+            api_url=f"/rest/v2.0/companies/{company_id}/projects/{project_id}/links/bulk_update",
+            additional_headers=self._headers(company_id),
+            json=links,
+            return_request_obj=return_request_obj,
+        )
