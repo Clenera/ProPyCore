@@ -231,9 +231,9 @@ class Projects(Base):
             if not response:
                 break
 
-            links.extend(response)
+            links.extend(response.get("data", []))
 
-            if len(response) < per_page:
+            if len(response.get("data", [])) < per_page:
                 break
 
             page += 1
