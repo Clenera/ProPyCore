@@ -200,30 +200,6 @@ class Projects(Base):
 
         raise NotFoundItemError(f"Could not find project {project_id}")
 
-    def get_links(self, company_id, project_id):
-        """
-        Gets the links for the given project
-
-        Parameters
-        ----------
-        company_id : int
-            The identifier for the company
-        project_id : int
-            The identifier for the project
-
-        Returns
-        -------
-        <type_name> : str
-            Project type name
-        """
-        headers = {"Procore-Company-Id": f"{company_id}"}
-        # Get the projects from the company endpoint which has the type_name field
-        project = self.get_request(
-            api_url=f"/rest/v1.0/companies/{company_id}/projects/{project_id}/links",
-            additional_headers=headers,
-            params={},
-        )
-
     def get_links(
         self,
         company_id,
